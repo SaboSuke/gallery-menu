@@ -1,18 +1,69 @@
-const InitMenu = function () {
 
-    let cursor = document.querySelector('.gallery-cursor');
-    let cursorClip = $('.gallery-cursor .cursor-clip');
-    let menu = document.querySelectorAll('.menu-wrapper .menu-item');
+/**
+ * @desc Handles the menu drag, wheel and intro animations
+ * 
+ * @param {Object?} options
+ * @param {Number} [options.wheelForwardStep=700] 
+ * @param {Number} [options.wheelBackwardStep=-200] 
+ * @return {InitMenu | null}
+ */
+const InitMenu = function (options = {}) {
+
+    const menuItemWidth = 700;
+    const menuItemsGap = 100;
+
+    const cursor = document.querySelector('.gallery-cursor');
+    const $menu = $(".menu-wrapper");
+    const offset = (menuItemWidth + menuItemsGap) * ($('.menu-wrapper').find('.menu-item').length - 1);
+    let animationInfo = {
+        started: false,
+        ended: false
+    }
     let x, y;
 
+    const reset = function () {
+        animationInfo.started = false;
+        animationInfo.ended = true;
+    }
+
+    const handleWheel = function (e) {
+        const current = parseInt($menu.css('left').replace('px', ''));
+        const pluStep = options.wheelForwardStep || 700, minusStep = options.wheelBackwardStep || -200;
+
+        if (e.originalEvent.wheelDelta / 120 > 0) {
+            const left = (current + 500) >= offset ? (offset - 200) : Math.abs(current + pluStep);
+            if (animationInfo.started) return;
+
+            animationInfo.started = true;
+            gsap.to($menu, {
+                duration: 1,
+                left: `${left}px`,
+                ease: 'Expo.easeInOut',
+            });
+            setTimeout(reset, 700);
+        }
+        else {
+            const left = current >= -300 ? -250 : -(current + minusStep);
+            if (animationInfo.started) return;
+
+            animationInfo.started = true;
+            gsap.to($menu, {
+                duration: 1,
+                left: `${left}px`,
+                ease: 'Expo.easeInOut',
+            });
+            setTimeout(reset, 700);
+        }
+    }
+
     const handleDragging = function () {
-        const $menu = $(".menu-wrapper");
         $menu.draggable({
             axis: "x",
             helper: ".gallery-cursor",
             scrollSensitivity: 100,
             scrollSpeed: 100,
             snap: false,
+            scroll: false,
             drag: function (event, ui) {
                 const current = parseInt($menu.css('left').replace('px', ''));
                 const max = document.querySelector('.menu-wrapper').scrollWidth;
@@ -23,10 +74,10 @@ const InitMenu = function () {
                         left: `${current + 300}px`,
                         ease: 'Expo.easeInOut'
                     });
-                } else if (current - max >= 1900) {
+                } else if (current >= (offset + 100)) {
                     gsap.to('.menu-wrapper', {
                         duration: 0.5,
-                        left: `3000px`,
+                        left: `${offset}px`,
                         ease: 'Expo.easeInOut'
                     });
                 }
@@ -36,7 +87,13 @@ const InitMenu = function () {
 
     this.animate = function () {
         const tl = gsap.timeline();
-        tl.from('.menu-wrapper', {
+        tl.from('.gallery-clip', {
+            duration: 1.5,
+            opacity: 0,
+            width: 0,
+            x: '100%',
+            ease: 'Expo.easeIn'
+        }, '-=1').from('.menu-wrapper', {
             duration: 1,
             opacity: 0,
             x: '100%',
@@ -59,7 +116,8 @@ const InitMenu = function () {
         handleDragging();
     }();
 
+    $(document).on('mousewheel', handleWheel);
 }
 
-const menu = new InitMenu();
-menu.animate();
+const gallery = new InitMenu();
+gallery.animate();

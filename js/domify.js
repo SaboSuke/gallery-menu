@@ -4,13 +4,16 @@
  * @param {String} selector 
  * @returns {Domify}
  */
-export const Domify = (selector) => {
+export const Domify = (selector, context = document) => {
     const self = {
         el: document.querySelector(selector),
         all: () => document.querySelectorAll(selector),
         click: (callback) => {
             self.el.addEventListener('click', callback);
             return self;
+        },
+        loop: (callback, thisValue = undefined) => {
+            forEach((item, index, array) => callback(item, index, array), thisValue)
         },
         on: (event, callback) => {
             self.el.addEventListener(event, callback);
@@ -43,7 +46,8 @@ export const Domify = (selector) => {
         },
         hasClass: (className) => {
             return self.el.classList.contains(className);
-        }
+        },
+        context
     };
 
     return self;
