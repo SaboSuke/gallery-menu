@@ -73,7 +73,6 @@ const InitMenu = function (options = {}) {
             scroll: false,
             drag: function (event, ui) {
                 const current = parseInt($menu.css('left').replace('px', ''));
-                console.log({ current })
                 const max = document.querySelector('.menu-wrapper').scrollWidth;
 
                 let plusCurrent = 300;
@@ -145,7 +144,11 @@ const InitMenu = function (options = {}) {
         document.addEventListener('mousemove', function (e) {
             x = e.pageX;
             y = e.pageY;
-            cursor.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
+            const isRtl = $('body').hasClass('rtl');
+            if (!isRtl)
+                cursor.style.transform = `translate3d(calc(${e.clientX}px - 50%), calc(${e.clientY}px - 50%), 0)`;
+            else
+                cursor.style.transform = `translate3d(calc(${e.clientX - window.innerWidth}px - 50%), calc(${e.clientY}px - 50%), 0)`;
         });
 
         handleDragging();
